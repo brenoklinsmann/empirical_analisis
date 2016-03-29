@@ -8,8 +8,12 @@
 
 #include "methods.h"
 
-#define PATTERN_VECTOR 5 // tamanho padrão atribuído no vetor
-#define MAX_VECTOR  30     // maior tamanho a ser alocado no vetor
+#define PATTERN_VECTOR    5     // DEFAULT VALUE TO THE VECTOR
+#define MAX_VECTOR       30     // HIGHEST VALUE TO THE VECTOR
+/* enum alike defines*/
+#define NORMAL            0     // FOR NORMAL MIXED SEARCHS
+#define WORST_CASE        1     // FOR WORST CASE: WHEN THE VALUE ISN'T IN IN THE VECTOR
+#define THIRD_PART  2     // FOR THE THIRD PART OF THE VECTOR
 
 using namespace std;
 
@@ -17,65 +21,121 @@ int main(int argc, char const *argv[])
 {
     auto arraySize(PATTERN_VECTOR);
     int seed = 1;
-    //1 - ATRIBUIR VALOR PADRÃO AO VETOR DA LINHA DE COMANDO
+    ofstream myfile_third;
+    ofstream myfile_worst;
+    ofstream myfile_normal;
+
+    /*VERIFY IF HAVE ANY ARGUMENTS ON COMMANDO LINE FOR THE VECTOR EXPONENT,
+    IF YES PUT ON ARRAY SIZE, ELSE USES THE DEFAULT VALUE FOR THE EXPONENT*/
     if(argc > 1){
         stringstream(argv[1]) >> arraySize;
+    } else{
+        arraySize = PATTERN_VECTOR;
     }
-    //2 - VERIFICAR SE A QUANTIDADE DE TERMOS NO VETOR É VÁLIDA (size >= 5)
+    //CHECK IF THE SIZE(size >= 5), ELSE USES DEFAULT VALUE
     if(arraySize < 5 || arraySize > MAX_VECTOR){
-        cout << "TAMANHO DO VETOR DEVE SER MAIOR QUE 5 E MENOR QUE 31! O MENOR VALOR SERÁ ATRIBUÍDO" << endl;
+        cout << ">>> SIZE OF THE VECTOR MUST BE BETWEEN 5 AND 30! THE LOWEST VALUE WILL BE APPLIED DO THE VECTOR" << endl;
         arraySize = PATTERN_VECTOR;
     }
 
     //------------------------------------------//
-    cout << ">>> Alocando Vetor..." << endl;
+    cout << ">>> Allocating vector..." << endl;
 
+    //USES THE EXPONENT TO CREATE THE VALUE TO ALLOCATE THE VECTOR
     arraySize = pow(2, arraySize);
     vector<long int> V(arraySize);
     cout << arraySize << endl;
-    
-    cout << "\n>>> Alocação Concluida..." << endl;
-    //------------------------------------------//
-    cout << "\n>>> Preenchendo Vetor" << endl;
 
-    //randomFill(V, l, r, seed, arraySize);
+    cout << "\n>>> Allocating finished..." << endl;
+    //------------------------------------------//
+    cout << "\n>>> Filling vector" << endl;
+
     randomFill( V, arraySize, seed);
-    
-    cout << "\n>>> Preenchimento Concluido" << endl;
 
-    cout<< "\n>>> Ordenando o Vetor"<<endl;
-    sort(V.begin(), V.end() );
-    cout<< "\n>>> Ordenação Concluida"<<endl;
+    cout << "\n>>> Filling finished" << endl;
+
+
     //------------------------------------------//
 
-    //3 - CONSTRUIR ARRAY DE FUNÇÕES
+    // BUILD THE ARRAY OF FUNCTION WITH ALL SEARCHS
+
 
     long int (*funcArray[])(vector<long int> , long int , long int , long int) = {
         sSearchRec,
-        bSearchIte,
-        bTernRec,
         sSearchIte,
+        bTernRec,
+        bSearchIte,
         bSearchRec,
         tSearchIte,
+        bWrapperSearch,
     };
 
-    // long int *V;
-    // V = new long int[arraySize];
+    string n_function[] = {"sequencial_search_rec",
+                           "sequencial_search_ite",
+                           "ternary_search_rec",
+                           "binary_search_ite",
+                           "binary_search_rec",
+                           "ternary_search_ite",
+                           "wrapper_binary_search" };
 
-    int z=5;
-    for(long int n = 32; n <= arraySize; n *= 2){
-        cout <<  "\n>>> Entrada: 2^"<< z << " " << n << endl;
-        for(int i=0; i < 6; ++i){
-           cout <<  "\n>>> Função "<< i << " : ";
-           cout <<  calculateTime(V, funcArray[i], 3, 0, n-1) << "";
+    long int third;
+    long int worst = 1001; //I'm using a vector with values from 0 to 1000, and 1001 dont exist
+    cout << "\n>>> TIME CALCULATE PROCESS WILL BEGIN NOW... " << endl;
+    vector<long int>::const_iterator begin;
+    vector<long int>::const_iterator last;
+
+    for(int i = 0; i < 7; i++){
+        if (i == 2){
+            cout << "\n>>> Sorting vector" << endl;
+            sort(V.begin(), V.end()); // sort the vector for sorted searchs
+            cout << "\n>>> Sorting completed\n" << endl;
         }
-        cout<<"\n";
-        z++;
+
+
+        myfile_third.open("files/thirdFour/" + n_function[i] + "_thirdFour.dat"  );
+        myfile_worst.open("files/worstCase/" + n_function[i] + "_worstCase.dat"  );
+        myfile_normal.open("files/normal/" + n_function[i] + "_normalCase.dat"  );
+
+                cout << n_function[i] << endl;
+        if(i == 0 && arraySize > pow(2, 13)){// VERIFIQUE O LIMITE DE ITERAÇÕES PARA A SEQUENCIAL RECURSIVA E ALTERE AQUI .. PQ DEPOIS DO LIMITE ELE PARA DE EXECUTAR
+            for(long int n = 32; n <= pow(2, 13); n *= 2){
+                third = V[3*n/4];
+                cout << "RUNNING " << n_function[i] <<" for the size [" << n << "]\n"<< endl;
+                begin = V.begin();
+                last = V.begin() + n;
+                vector<long int> new_arr(begin+1, last);
+                cout << "RUNNING THE THIRD PART\n"<< endl;
+                myfile_third << n << " " << calculateTime(new_arr, funcArray[i], third, 0, n-1) << endl; //imprime o valor da variavel cont no dat
+                cout << "RUNNING THE WORST CASE\n"<< endl;
+                myfile_worst << n << " " << calculateTime(new_arr, funcArray[i], worst, 0, n-1) << endl; //imprime o valor da variavel cont no dat
+                cout << "RUNNING THE NORMAL\n"<< endl;
+                myfile_normal << n << " " << calculateTime(new_arr, funcArray[i], 47, 0, n-1) << endl; //imprime o valor da variavel cont no dat
+                new_arr.clear();
+            }
+        }else{
+            for(long int n = 32; n <= arraySize; n *= 2){
+                third = V[3*n/4];
+                cout << "RUNNING " << n_function[i] <<" for the size [" << n << "]\n"<< endl;
+                begin = V.begin();
+                last = V.begin() + n;
+                vector<long int> new_arr(begin+1, last);
+                cout << "RUNNING THE THIRD PART\n"<< endl;
+                myfile_third << n << " " << calculateTime(new_arr, funcArray[i], third, 0, n-1) << endl; //imprime o valor da variavel cont no dat
+                cout << "RUNNING THE WORST CASE\n"<< endl;
+                myfile_worst << n << " " << calculateTime(new_arr, funcArray[i], worst, 0, n-1) << endl; //imprime o valor da variavel cont no dat
+                cout << "RUNNING THE NORMAL\n"<< endl;
+                myfile_normal << n << " " << calculateTime(new_arr, funcArray[i], 47, 0, n-1) << endl;//imprime o valor da variavel cont no dat
+                new_arr.clear();
+            }
+        }
+
+        myfile_third.close();
+        myfile_worst.close();
+        myfile_normal.close();
     }
-    cout<<"\n";
 
-    //4 - ATRIBUIR VALOR TOTAL A SER UTILIZADO NO ARRAY, EM UMA VARIAVEL
-    //5 - CRIAR VARIÁVEIS E ATRIBUIR VALOR DE MAIOR E MENOR A CADA
+    cout << "\n>>> Measures done, Sorry for the wait ..." << endl;
 
-    return 0;
+    V.clear();
+    return EXIT_SUCCESS;
 }

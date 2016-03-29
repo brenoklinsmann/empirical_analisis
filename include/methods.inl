@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <random>
+#include <fstream>
 
 #include "methods.h"
 
@@ -23,6 +24,7 @@ long int sSearchRec(std::vector<Obj> v , Obj n, long int l, long int r){
 
 template <typename Obj>
 long int bSearchIte(std::vector<Obj> v, Obj n, long int l, long int r){
+
     while (l <= r){
         int media = (l+r)/2;
         if(v[media] == n){
@@ -96,7 +98,6 @@ void randomFill(std::vector<Obj> &v, const Obj l, const Obj u, const unsigned in
 // }
 
 long double calculateTime(const std::vector<long int> v, long int (*function)(std::vector<long int>, long int, long int, long int ), const long int x, const long int l, const long int r ){
-
     long double duration = 0;
     for (int i = 0; i < 100; ++i)
     {
@@ -111,20 +112,7 @@ long double calculateTime(const std::vector<long int> v, long int (*function)(st
     return duration;
 }
 
-// template <typename Obj>
-// long double calculateTime(int x , int (*function)(Obj , Obj , int , int ), Obj n, int l, int r, const std::vector<Obj> v){
-//     long double duration = 0;
-//     for (int i = 0; i < x; ++i)
-//     {
-//         auto start = steady_clock::now();
-//         function(v, n, l, r);
-//         auto end = steady_clock::now();
-//         auto diff = chrono::duration <double, std::milli> (end-start).count();
 
-//         duration += (diff-duration)/(i+1);
-//     }
-//     return duration;
-// }
 
 //PARTE DE BRENO
 template<typename Obj>
@@ -187,20 +175,22 @@ int comparar (const Obj x, const Obj y)
 }
 //void* bsearch( const void* key, const void* ptr, std::size_t count,
 //std::size_t size, int (*comp)(const void*, const void*) );
-template<typename Obj>
+template <typename Obj>
 long int bWrapperSearch( vector<Obj> _V, const Obj x, long int low, long int high)
 {
     Obj *a = (Obj *)bsearch( &x, _V.data(), high - low + 1, sizeof(Obj), comparar);
-    if( a != NULL ) return (a - _V.data() );
+    if( a != NULL )
+        return (a - _V.data() );
     else return -1;
 }
+
 
 
 // template <typename Obj>
 
 // void calculateTime(Obj fileName, int _argc, Obj argv, Obj function){
 //     ofstream myfile;
-//     myfile.open("exemple.txt");
+//     myfile.open("exemple.dat");
 //     auto maxN(0ul);
 //     if(_argc > 1)
 //         stringstream(argv[1])>> maxN;
