@@ -185,7 +185,6 @@ long int bWrapperSearch( vector<Obj> _V, const Obj x, long int low, long int hig
 }
 
 
-
 // template <typename Obj>
 
 // void calculateTime(Obj fileName, int _argc, Obj argv, Obj function){
